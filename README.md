@@ -5,6 +5,8 @@
 </div>
 
 
+
+
 # PACD: Provenance-Aware Consensus Decoding for Mitigating Cross-Modal Hallucinations in Omnimodal Large Language Models
 
 **A training-free decoding framework that preserves reliable modality-specific predictions and selectively recovers from incorrect agreement across audio-visual branches.**
@@ -28,11 +30,13 @@ A diagnostic analysis with OmniVinci on 2,405 SVHalluc questions identifies two 
   <img src="assets/figures/motivation.png" width="100%" alt="Two failure modes motivating PACD: neglected reliable unimodal predictions and persistent erroneous consensus" />
 </p>
 
+
 ### Overview of PACD
 
 <p align="center">
   <img src="assets/figures/framework.png" width="100%" alt="PACD framework with relevance-guided candidate arbitration and provenance-based consensus recovery" />
 </p>
+
 
 ---
 
@@ -45,12 +49,12 @@ PACD follows two complementary paths depending on whether the audio-only (A), vi
 For non-consensus cases, RGCA identifies the most query-relevant unimodal branch. Given the modality-relevance scores (<i>r</i><sub>A</sub>, <i>r</i><sub>V</sub>, <i>r</i><sub>AV</sub>), the target modality and routed candidate are selected as
 
 $$
-m^* =
+m^{*} =
 \begin{cases}
 A, & r_A > r_V, \\
 V, & r_A \le r_V,
 \end{cases}
-\qquad c_R = c_{m^*}.
+\qquad c_R = c_{m^{*}}.
 $$
 
 For question <i>i</i>, let 𝒞<sub><i>i</i></sub> denote the valid answer candidates. Given <i>c</i><sub>R</sub>, RGCA constructs the alternative set
@@ -64,25 +68,24 @@ RGCA uses candidate-logit contributions <i>e</i><sub>ℓ,<i>m</i></sub>(<i>c</i>
 $$
 \begin{aligned}
 d_{\ell,m}(c) &= e_{\ell,m}(c) - e_{\ell,m}(c_R), \\
-x_{\ell}(c) &= \frac{d_{\ell,m^*}(c)}{s_e(c)}.
+x_{\ell}(c) &= \frac{d_{\ell,m^{*}}(c)}{s_e(c)}.
 \end{aligned}
 $$
 
 Here, <i>s</i><sub>e</sub>(<i>c</i>) is the candidate-specific contribution scale defined over the examined layers ℒ<sub>N</sub> in the paper. The strongest alternative is selected using the median provenance evidence:
 
 $$
-c^* = \arg\max_{c\in\mathcal{A}_i} Q(c),
+c^{*} = \arg\max_{c\in\mathcal{A}_i} Q(c),
 \qquad
-Q(c) = \operatorname{median}_{\ell\in\mathcal{L}_N} x_{\ell}(c).
+Q(c) = \mathrm{median}_{\ell\in\mathcal{L}_{N}} x_{\ell}(c).
 $$
 
 RGCA then compares the candidate-logit margins from the target branch and MAD, normalized by <i>s</i><sub>z</sub>:
 
 $$
-\begin{aligned}
-T &= \frac{z_{m^*}^{t}(c_R)-z_{m^*}^{t}(c^*)}{s_z}, \\
-M &= \frac{z_{\mathrm{MAD}}^{t}(c_R)-z_{\mathrm{MAD}}^{t}(c^*)}{s_z}.
-\end{aligned}
+T = \frac{z_{m^{*}}^{t}(c_R)-z_{m^{*}}^{t}(c^{*})}{s_z},
+\qquad
+M = \frac{z_{\mathrm{MAD}}^{t}(c_R)-z_{\mathrm{MAD}}^{t}(c^{*})}{s_z}.
 $$
 
 A confidence veto determines whether the routed prediction should be replaced by the MAD prediction:
@@ -93,7 +96,7 @@ v = \mathbb{I}[c_R\ne c_{\mathrm{MAD}}]
 \land \mathbb{I}[M<-\tau_M].
 $$
 
-RGCA outputs <i>c</i><sub>B</sub> = <i>c</i><sub>MAD</sub> when <i>v</i> = 1, and <i>c</i><sub>B</sub> = <i>c</i><sub>R</sub> otherwise. The alternative <i>c</i><sup>∗</sup> serves as comparative provenance evidence;
+RGCA outputs <i>c</i><sub>B</sub> = <i>c</i><sub>MAD</sub> when <i>v</i> = 1, and <i>c</i><sub>B</sub> = <i>c</i><sub>R</sub> otherwise. The alternative <i>c</i><sup>∗</sup> serves as comparative provenance evidence.
 
 ### 2. Provenance-Based Consensus Recovery (PBCR)
 
@@ -104,8 +107,8 @@ The consensus condition and cross-layer provenance concordance are
 $$
 \mathrm{Cons}_i = \mathbb{I}[c_A=c_V=c_{AV}],
 \qquad
-C(c^*) = \frac{1}{|\mathcal{L}_N|}
-\sum_{\ell\in\mathcal{L}_N}\mathbb{I}[x_{\ell}(c^*)>0].
+C(c^{*}) = \frac{1}{|\mathcal{L}_{N}|}
+\sum_{\ell\in\mathcal{L}_{N}}\mathbb{I}[x_{\ell}(c^{*})>0].
 $$
 
 - Cross-layer concordance <i>C</i>(<i>c</i><sup>∗</sup>): the proportion of examined layers supporting the alternative.
@@ -116,15 +119,13 @@ $$
 PBCR applies the non-compensatory recovery rule:
 
 $$
-\begin{aligned}
-\mathrm{Rescue}_i ={}& \mathrm{Cons}_i \land U_i
-\land \mathbb{I}[C(c^*)\ge\tau_C] \\
-&\land \mathbb{I}[Q(c^*)>\tau_S]
-\land \mathbb{I}[\max(T,M)<\tau_R].
-\end{aligned}
+\mathrm{Rescue}_i = \mathrm{Cons}_i \land U_i \land
+\mathbb{I}[C(c^{*})\ge\tau_C] \land
+\mathbb{I}[Q(c^{*})>\tau_S] \land
+\mathbb{I}[\max(T,M)<\tau_R].
 $$
 
-The conditions restrict recovery to candidates meeting the specified provenance consistency, evidence strength, uniqueness, and confidence criteria;
+The conditions restrict recovery to candidates meeting the specified provenance consistency, evidence strength, uniqueness, and confidence criteria.
 
 ### 3. Final PACD Decision
 
@@ -134,7 +135,7 @@ $$
 \hat{c}_{\mathrm{PACD}} =
 \begin{cases}
 c_B, & \neg\mathrm{Cons}_i, \\
-c^*, & \mathrm{Rescue}_i, \\
+c^{*}, & \mathrm{Rescue}_i, \\
 c_{\mathrm{MAD}}, & \text{otherwise}.
 \end{cases}
 $$
@@ -153,6 +154,7 @@ The examples below show both types of errors addressed by PACD.
   <img src="assets/figures/rgca_examples.png" width="82%" alt="Two qualitative examples of RGCA preserving reliable modality-specific answers" />
 </p>
 
+
 In the first example, the video-only branch correctly predicts No, while the audio-only and joint AV branches predict Yes; PACD outputs No. In the second example, the audio-only branch correctly chooses C, while the video-only and joint AV branches choose A; PACD outputs C.
 
 ### PBCR: Recovering from Incorrect Consensus
@@ -160,6 +162,7 @@ In the first example, the video-only branch correctly predicts No, while the aud
 <p align="center">
   <img src="assets/figures/pbcr_examples.png" width="82%" alt="Two qualitative examples of PBCR correcting shared incorrect predictions" />
 </p>
+
 
 In both examples, the A, V, and AV branches share the same incorrect prediction. The alternative receives cross-layer provenance support, and the full PACD decision recovers the correct answer. The visualized positive layers illustrate concordance but do not alone establish the complete PBCR recovery criterion.
 
@@ -171,12 +174,12 @@ PACD is evaluated on four Omni-LLM backbones and three cross-modal hallucination
 
 ### Overall Accuracy (%)
 
-| Backbone | CMM Base | CMM MAD | **CMM PACD** | AVHBench Base | AVHBench MAD | **AVHBench PACD** | SVHalluc Base | SVHalluc MAD | **SVHalluc PACD** |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| VideoLLaMA2-AV-7B | 77.3 | 80.9 | **82.4** | 72.6 | 78.8 | **80.6** | 51.7 | 56.7 | **60.4** |
-| OmniVinci | 82.4 | 85.4 | **87.4** | 71.1 | 75.1 | **78.8** | 50.9 | 53.9 | **63.7** |
-| Qwen2.5-Omni-3B | 78.0 | 80.4 | **84.6** | 75.8 | 80.9 | **82.4** | 60.2 | 64.5 | **65.6** |
-| Qwen2.5-Omni-7B | 68.4 | 80.3 | **87.3** | 75.5 | 80.8 | **82.0** | 64.7 | 67.8 | **68.8** |
+|     Backbone      | CMM Base | CMM MAD | **CMM PACD** | AVHBench Base | AVHBench MAD | **AVHBench PACD** | SVHalluc Base | SVHalluc MAD | **SVHalluc PACD** |
+| :---------------: | :------: | :-----: | :----------: | :-----------: | :----------: | :---------------: | :-----------: | :----------: | :---------------: |
+| VideoLLaMA2-AV-7B |   77.3   |  80.9   |   **82.4**   |     72.6      |     78.8     |     **80.6**      |     51.7      |     56.7     |     **60.4**      |
+|     OmniVinci     |   82.4   |  85.4   |   **87.4**   |     71.1      |     75.1     |     **78.8**      |     50.9      |     53.9     |     **63.7**      |
+|  Qwen2.5-Omni-3B  |   78.0   |  80.4   |   **84.6**   |     75.8      |     80.9     |     **82.4**      |     60.2      |     64.5     |     **65.6**      |
+|  Qwen2.5-Omni-7B  |   68.4   |  80.3   |   **87.3**   |     75.5      |     80.8     |     **82.0**      |     64.7      |     67.8     |     **68.8**      |
 
 PACD improves overall accuracy across all 12 model–benchmark combinations. Its largest relative gain over Base is 27.6% (Qwen2.5-Omni-7B on CMM), and its largest absolute improvement over MAD is 9.8 percentage points (OmniVinci on SVHalluc).
 
@@ -185,31 +188,33 @@ PACD improves overall accuracy across all 12 model–benchmark combinations. Its
 <details>
 <summary>Expand the PACD-only category-level scores</summary>
 
-| Backbone | CMM Visual Dom. | CMM Audio Dom. | CMM Overall | AVH Video-Driven Audio Hall. | AVH Audio-Driven Video Hall. | AVH Overall | SVHalluc Sem. | SVHalluc Temp. | SVHalluc Overall |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| VideoLLaMA2-AV-7B | 86.5 | 78.3 | 82.4 | 81.2 | 79.4 | 80.6 | 71.0 | 45.0 | 60.4 |
-| OmniVinci | 88.5 | 86.3 | 87.4 | 82.6 | 71.0 | 78.8 | 75.7 | 46.4 | 63.7 |
-| Qwen2.5-Omni-3B | 80.8 | 88.5 | 84.6 | 82.7 | 81.8 | 82.4 | 78.0 | 47.6 | 65.6 |
-| Qwen2.5-Omni-7B | 85.0 | 89.5 | 87.3 | 80.7 | 84.7 | 82.0 | 82.8 | 48.5 | 68.8 |
+
+|     Backbone      | CMM Visual Dom. | CMM Audio Dom. | CMM Overall | AVH Video-Driven Audio Hall. | AVH Audio-Driven Video Hall. | AVH Overall | SVHalluc Sem. | SVHalluc Temp. | SVHalluc Overall |
+| :---------------: | :-------------: | :------------: | :---------: | :--------------------------: | :--------------------------: | :---------: | :-----------: | :------------: | :--------------: |
+| VideoLLaMA2-AV-7B |      86.5       |      78.3      |    82.4     |             81.2             |             79.4             |    80.6     |     71.0      |      45.0      |       60.4       |
+|     OmniVinci     |      88.5       |      86.3      |    87.4     |             82.6             |             71.0             |    78.8     |     75.7      |      46.4      |       63.7       |
+|  Qwen2.5-Omni-3B  |      80.8       |      88.5      |    84.6     |             82.7             |             81.8             |    82.4     |     78.0      |      47.6      |       65.6       |
+|  Qwen2.5-Omni-7B  |      85.0       |      89.5      |    87.3     |             80.7             |             84.7             |    82.0     |     82.8      |      48.5      |       68.8       |
 
 ### Visual Comparison
 
 <p align="center">
   <img src="assets/figures/main_results.png" width="94%" alt="Performance comparison across CMM, AVHBench, and SVHalluc for Qwen2.5-Omni-7B and OmniVinci" />
 </p>
+
 ---
 
 ## 🔬 Component Ablation
 
 **OmniVinci**, accuracy (%):
 
-| Variant | CMM | AVHBench | SVHalluc |
-|:---:|:---:|:---:|:---:|
-| Base | 82.4 | 71.1 | 50.9 |
-| Routing | 83.5 | 74.3 | 53.6 |
-| RGCA | 86.9 | 77.7 | 54.0 |
-| Routing + PBCR | 84.0 | 75.6 | 62.9 |
-| **Full PACD** | **87.4** | **78.8** | **63.7** |
+|    Variant     |   CMM    | AVHBench | SVHalluc |
+| :------------: | :------: | :------: | :------: |
+|      Base      |   82.4   |   71.1   |   50.9   |
+|    Routing     |   83.5   |   74.3   |   53.6   |
+|      RGCA      |   86.9   |   77.7   |   54.0   |
+| Routing + PBCR |   84.0   |   75.6   |   62.9   |
+| **Full PACD**  | **87.4** | **78.8** | **63.7** |
 
 Routing selects the most relevant unimodal branch. RGCA adds provenance-guided arbitration. Routing + PBCR uses the routed candidate as its default prediction and applies consensus recovery; Full PACD applies the complete consensus-dependent decision rule.
 
@@ -219,14 +224,14 @@ Routing selects the most relevant unimodal branch. RGCA adds provenance-guided a
 
 PACD also improves performance on **OmniVideoBench** and **FutureOmni** beyond hallucination-specific evaluation.
 
-| Backbone / Method | OmniVideoBench | FutureOmni |
-|:---:|:---:|:---:|
-| VideoLLaMA2-AV-7B Base | 27.5 | 38.8 |
-| VideoLLaMA2-AV-7B MAD | 28.3 | 36.3 |
-| **VideoLLaMA2-AV-7B PACD** | **31.1** | **40.0** |
-| OmniVinci Base | 32.9 | 52.7 |
-| OmniVinci MAD | 32.5 | 51.7 |
-| **OmniVinci PACD** | **34.8** | **53.5** |
+|     Backbone / Method      | OmniVideoBench | FutureOmni |
+| :------------------------: | :------------: | :--------: |
+|   VideoLLaMA2-AV-7B Base   |      27.5      |    38.8    |
+|   VideoLLaMA2-AV-7B MAD    |      28.3      |    36.3    |
+| **VideoLLaMA2-AV-7B PACD** |    **31.1**    |  **40.0**  |
+|       OmniVinci Base       |      32.9      |    52.7    |
+|       OmniVinci MAD        |      32.5      |    51.7    |
+|     **OmniVinci PACD**     |    **34.8**    |  **53.5**  |
 
 The four relative improvements over MAD are 9.9%, 10.2%, 7.1%, and 3.5%, giving an arithmetic mean relative improvement of 7.7% over MAD.
 
@@ -236,10 +241,10 @@ The four relative improvements over MAD are 9.9%, 10.2%, 7.1%, and 3.5%, giving 
 
 Average reported inference time and peak GPU memory on **VideoLLaMA2-AV-7B**:
 
-| Method | CMM Latency | CMM Peak GPU Memory | AVHBench Latency | AVHBench Peak GPU Memory |
-|:---:|:---:|:---:|:---:|:---:|
-| MAD | 1.41 s | 20.7 G | 1.40 s | 20.7 G |
-| **PACD** | **1.45 s** | **20.7 G** | **1.44 s** | **20.7 G** |
+|  Method  | CMM Latency | CMM Peak GPU Memory | AVHBench Latency | AVHBench Peak GPU Memory |
+| :------: | :---------: | :-----------------: | :--------------: | :----------------------: |
+|   MAD    |   1.41 s    |       20.7 G        |      1.40 s      |          20.7 G          |
+| **PACD** | **1.45 s**  |     **20.7 G**      |    **1.44 s**    |        **20.7 G**        |
 
 The measured inference latency is comparable to MAD, with identical *reported* peak-memory figures at the displayed precision.
 
@@ -250,6 +255,7 @@ The measured inference latency is comparable to MAD, with identical *reported* p
 <p align="center">
   <img src="assets/figures/duration_and_consensus.png" width="100%" alt="OmniVinci on SVHalluc: accuracy by video duration and incorrect-consensus cases" />
 </p>
+
 
 For OmniVinci on SVHalluc, PACD improves accuracy by 31.1, 14.7, 6.2, and 7.0 percentage points over Base in the four displayed video-duration groups. Among the 806 initially incorrect-consensus cases, MAD corrects only 23, leaving 783 unresolved. In contrast, PACD corrects 570 cases, reducing the number of remaining incorrect cases to 236, corresponding to a 70.7% reduction relative to the initial count.
 
