@@ -280,7 +280,7 @@ PACD_Github/
 
 The following will be released after submission:
 
-- ⏳ PACD decoding implementation (RGCA and PBCR).
+- ⏳ PACD decoding implementation.
 - ⏳ Evaluation scripts for CMM, AVHBench, SVHalluc, OmniVideoBench, and FutureOmni.
 - ⏳ Model-specific configurations for VideoLLaMA2-AV, OmniVinci, and Qwen2.5-Omni (3B/7B).
 
