@@ -48,53 +48,53 @@ PACD follows two complementary paths depending on whether the audio-only (A), vi
 
 For non-consensus cases, RGCA identifies the most query-relevant unimodal branch. Given the modality-relevance scores (<i>r</i><sub>A</sub>, <i>r</i><sub>V</sub>, <i>r</i><sub>AV</sub>), the target modality and routed candidate are selected as
 
-$$
+```math
 m^{*} =
 \begin{cases}
 A, & r_A > r_V, \\
 V, & r_A \le r_V,
 \end{cases}
 \qquad c_R = c_{m^{*}}.
-$$
+```
 
 For question <i>i</i>, let 𝒞<sub><i>i</i></sub> denote the valid answer candidates. Given <i>c</i><sub>R</sub>, RGCA constructs the alternative set
 
-$$
+```math
 \mathcal{A}_i = \mathcal{C}_i \setminus \{c_R\}.
-$$
+```
 
 RGCA uses candidate-logit contributions <i>e</i><sub>ℓ,<i>m</i></sub>(<i>c</i>) extracted from the joint audio-visual branch to compare each alternative with the routed candidate. For the selected modality <i>m</i><sup>∗</sup>, the normalized layer-wise provenance evidence is
 
-$$
+```math
 \begin{aligned}
 d_{\ell,m}(c) &= e_{\ell,m}(c) - e_{\ell,m}(c_R), \\
 x_{\ell}(c) &= \frac{d_{\ell,m^{*}}(c)}{s_e(c)}.
 \end{aligned}
-$$
+```
 
 Here, <i>s</i><sub>e</sub>(<i>c</i>) is the candidate-specific contribution scale defined over the examined layers ℒ<sub>N</sub> in the paper. The strongest alternative is selected using the median provenance evidence:
 
-$$
+```math
 c^{*} = \arg\max_{c\in\mathcal{A}_i} Q(c),
 \qquad
 Q(c) = \mathrm{median}_{\ell\in\mathcal{L}_{N}} x_{\ell}(c).
-$$
+```
 
 RGCA then compares the candidate-logit margins from the target branch and MAD, normalized by <i>s</i><sub>z</sub>:
 
-$$
+```math
 T = \frac{z_{m^{*}}^{t}(c_R)-z_{m^{*}}^{t}(c^{*})}{s_z},
 \qquad
 M = \frac{z_{\mathrm{MAD}}^{t}(c_R)-z_{\mathrm{MAD}}^{t}(c^{*})}{s_z}.
-$$
+```
 
 A confidence veto determines whether the routed prediction should be replaced by the MAD prediction:
 
-$$
+```math
 v = \mathbb{I}[c_R\ne c_{\mathrm{MAD}}]
 \land \mathbb{I}[T<\tau_T]
 \land \mathbb{I}[M<-\tau_M].
-$$
+```
 
 RGCA outputs <i>c</i><sub>B</sub> = <i>c</i><sub>MAD</sub> when <i>v</i> = 1, and <i>c</i><sub>B</sub> = <i>c</i><sub>R</sub> otherwise. The alternative <i>c</i><sup>∗</sup> serves as comparative provenance evidence.
 
@@ -104,12 +104,12 @@ For consensus cases, PBCR examines whether an alternative candidate should repla
 
 The consensus condition and cross-layer provenance concordance are
 
-$$
+```math
 \mathrm{Cons}_i = \mathbb{I}[c_A=c_V=c_{AV}],
 \qquad
 C(c^{*}) = \frac{1}{|\mathcal{L}_{N}|}
 \sum_{\ell\in\mathcal{L}_{N}}\mathbb{I}[x_{\ell}(c^{*})>0].
-$$
+```
 
 - Cross-layer concordance <i>C</i>(<i>c</i><sup>∗</sup>): the proportion of examined layers supporting the alternative.
 - Evidence strength <i>Q</i>(<i>c</i><sup>∗</sup>): the median normalized provenance evidence.
@@ -118,12 +118,12 @@ $$
 
 PBCR applies the non-compensatory recovery rule:
 
-$$
+```math
 \mathrm{Rescue}_i = \mathrm{Cons}_i \land U_i \land
 \mathbb{I}[C(c^{*})\ge\tau_C] \land
 \mathbb{I}[Q(c^{*})>\tau_S] \land
 \mathbb{I}[\max(T,M)<\tau_R].
-$$
+```
 
 The conditions restrict recovery to candidates meeting the specified provenance consistency, evidence strength, uniqueness, and confidence criteria.
 
@@ -131,14 +131,14 @@ The conditions restrict recovery to candidates meeting the specified provenance 
 
 The final prediction follows the consensus-dependent decision rule in the paper:
 
-$$
+```math
 \hat{c}_{\mathrm{PACD}} =
 \begin{cases}
 c_B, & \neg\mathrm{Cons}_i, \\
 c^{*}, & \mathrm{Rescue}_i, \\
 c_{\mathrm{MAD}}, & \text{otherwise}.
 \end{cases}
-$$
+```
 
 Non-consensus cases use the RGCA prediction <i>c</i><sub>B</sub>. Consensus cases adopt <i>c</i><sup>∗</sup> only when the PBCR recovery conditions hold; otherwise, PACD retains <i>c</i><sub>MAD</sub>.
 
@@ -185,10 +185,6 @@ PACD improves overall accuracy across all 12 model–benchmark combinations. Its
 
 ### PACD Subcategory Accuracy (%)
 
-<details>
-<summary>Expand the PACD-only category-level scores</summary>
-
-
 |     Backbone      | CMM Visual Dom. | CMM Audio Dom. | CMM Overall | AVH Video-Driven Audio Hall. | AVH Audio-Driven Video Hall. | AVH Overall | SVHalluc Sem. | SVHalluc Temp. | SVHalluc Overall |
 | :---------------: | :-------------: | :------------: | :---------: | :--------------------------: | :--------------------------: | :---------: | :-----------: | :------------: | :--------------: |
 | VideoLLaMA2-AV-7B |      86.5       |      78.3      |    82.4     |             81.2             |             79.4             |    80.6     |     71.0      |      45.0      |       60.4       |
@@ -201,6 +197,7 @@ PACD improves overall accuracy across all 12 model–benchmark combinations. Its
 <p align="center">
   <img src="assets/figures/main_results.png" width="94%" alt="Performance comparison across CMM, AVHBench, and SVHalluc for Qwen2.5-Omni-7B and OmniVinci" />
 </p>
+
 
 ---
 
