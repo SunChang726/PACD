@@ -1,6 +1,6 @@
 <div align="center">
   <p align="center">
-    <img src="assets/figures/logo.png" alt="PACD mascot" width="300" />
+    <img src="assets/figures/logo.png" alt="PACD mascot" width="250" />
   </p>
 </div>
 
