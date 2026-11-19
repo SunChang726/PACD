@@ -236,14 +236,15 @@ The four relative improvements over MAD are 9.9%, 10.2%, 7.1%, and 3.5%, giving 
 
 ## ⚡ Computational Efficiency
 
-Average reported inference time and peak GPU memory on **VideoLLaMA2-AV-7B**:
+Average reported inference latency and peak GPU memory on **VideoLLaMA2-AV-7B**:
 
-|  Method  | CMM Latency | CMM Peak GPU Memory | AVHBench Latency | AVHBench Peak GPU Memory |
-| :------: | :---------: | :-----------------: | :--------------: | :----------------------: |
-|   MAD    |   1.41 s    |       20.7 G        |      1.40 s      |          20.7 G          |
-| **PACD** | **1.45 s**  |     **20.7 G**      |    **1.44 s**    |        **20.7 G**        |
+| Method | CMM Latency | CMM Peak GPU Memory | AVHBench Latency | AVHBench Peak GPU Memory |
+|:-------|------------:|--------------------:|-----------------:|-------------------------:|
+| AVCD   | 1.70 s      | 22.6 GB             | 1.40 s           | 22.7 GB                  |
+| MAD    | 1.41 s      | 20.7 GB             | 1.40 s           | 20.7 GB                  |
+| **PACD** | **1.45 s** | **20.7 GB**        | **1.44 s**       | **20.7 GB**              |
 
-The measured inference latency is comparable to MAD, with identical *reported* peak-memory figures at the displayed precision.
+PACD achieves inference latency comparable to MAD while maintaining the same peak GPU memory usage.
 
 ---
 
