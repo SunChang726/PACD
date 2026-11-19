@@ -293,12 +293,10 @@ If you find this project interesting, feel free to star or watch the repository 
 
 ---
 
-## Cite
-
-If you find this work useful, please cite our paper:
+## 📖 Cite
 
 ```bibtex
-@article{sun2026pacdprovenanceawareconsensusdecoding,
+@article{sun2026pacd,
   title={PACD: Provenance-Aware Consensus Decoding for Mitigating Cross-Modal Hallucinations in Omnimodal Large Language Models},
   author={Sun, Chang and Tian, Yijun and Tang, Zhenwei and Deng, Yuchen and Liu, Yifan Simon and Wang, Chenxu and Wang, Wei},
   journal={arXiv preprint arXiv:2611.22456},
